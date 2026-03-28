@@ -1,0 +1,40 @@
+#!/bin/bash
+version=0.1
+
+## Script by Marina Parres
+## 2026.03.23 
+
+## This script was developed with: 
+## datasets version: 18.21.0
+## QUAST v5.3.0
+## BUSCO v6.0.0
+
+## INSTRUCTIONS
+## down_ncbigenome
+## description: script to download reference genomes form ncbi and run two QC programs: QUAST and BUSCO
+## usage: down_ncbigenomes <AssemblyID> <BUSCO_lineage>
+## input: two arguments
+## output: AssemblyQC directory with two subdirectories
+##         AssemblyID.QUAST
+##         AssemblyID.BUSCO.BUSCO_lineage
+
+assembly_id=$1;
+busco_lineage=$2;
+
+
+## 1. Download the genome and unzip it
+datasets download genome accession $assembly_id --include genome,seq-report;
+
+unzip ncbi_dataset.zip;
+
+## Capture the genome fasta file name
+## through ls and grep
+fasta=$( ls ncbi_dataset/data/$assembly_id/ |grep fna);
+
+## 2. Run QUAST 
+quast -o AssemblyQC/$assembly_id".quast" ncbi_dataset/data/$assembly_id/$fasta
+
+## 3. Run BUSCO
+busco -i ncbi_dataset/data/$assembly_id/$fasta -o AssemblyQC/$assembly_id".busco."$busco_lineage -c 4 -m genome -l $busco_lineage 
+
+
